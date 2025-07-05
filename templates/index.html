@@ -2,23 +2,657 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Course Recommendation System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduRecommend - AI-Powered Course Discovery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
-</head>
-<body class="p-5">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --light-bg: #f8fafc;
+            --card-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --card-shadow-hover: 0 20px 60px rgba(0,0,0,0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light-bg);
+            color: #2d3748;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Section */
+        .hero-section {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 80px 0 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="3"/></g></svg>') repeat;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            font-weight: 300;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            margin-top: -40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .search-input {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .search-btn {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Results Section */
+        .results-container {
+            margin-top: 60px;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .results-subtitle {
+            font-size: 1.1rem;
+            color: #718096;
+        }
+
+        /* Course Cards */
+        .course-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: none;
+            overflow: hidden;
+            transition: var(--transition);
+            height: 100%;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .course-rank {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary-gradient);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .course-card .card-body {
+            padding: 32px;
+        }
+
+        .course-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            padding-right: 60px;
+        }
+
+        .skills-tag {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            color: #065f46;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .course-description {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .course-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .meta-item i {
+            color: #667eea;
+        }
+
+        .view-course-btn {
+            background: var(--success-gradient);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .view-course-btn:hover {
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        /* Loading States */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        /* Alert Styles */
+        .custom-alert {
+            border-radius: var(--border-radius);
+            border: none;
+            padding: 24px;
+            font-size: 1rem;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
+            color: #0c4a6e;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .search-section {
+                margin: -20px 20px 0;
+                padding: 30px 20px;
+            }
+            
+            .course-card .card-body {
+                padding: 24px;
+            }
+            
+            .course-title {
+                font-size: 1.2rem;
+                padding-right: 50px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        #results::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #results::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        #results::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        #results::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="hero-title">
+                    <i class="bi bi-mortarboard-fill me-3"></i>
+                    EduRecommend
+                </h1>
+                <p class="hero-subtitle">
+                    Discover your perfect learning path with AI-powered course recommendations
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
     <div class="container">
-        <h1 class="mb-4">Course Recommendation System</h1>
-        <p>Enter a course description to get recommendations:</p>
-        <form id="reco-form">
-            <input type="text" id="query" class="form-control" placeholder="Enter course description" required>
-            <button class="btn btn-primary mt-3" type="submit">Get Recommendations</button>
-        </form>
-        <div id="results" class="mt-4"></div>
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form id="reco-form">
+                        <div class="mb-4">
+                            <label for="query" class="form-label h5 text-center d-block mb-3">
+                                <i class="bi bi-search me-2"></i>
+                                What would you like to learn today?
+                            </label>
+                            <input type="text" 
+                                   id="query" 
+                                   class="form-control search-input" 
+                                   placeholder="e.g., machine learning, web development, data science, digital marketing..." 
+                                   required>
+                        </div>
+                        <div class="text-center">
+                            <button class="btn search-btn" type="submit">
+                                <i class="bi bi-magic me-2"></i>
+                                <span class="btn-text">Find My Perfect Courses</span>
+                                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-container">
+            <div id="results"></div>
+        </section>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Add ripple effect to button
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+            circle.classList.add("ripple");
+            
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+            
+            button.appendChild(circle);
+        }
+
+        // Form submission handler
+        document.getElementById('reco-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('query').value.trim();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const spinner = submitBtn.querySelector('.spinner-border');
+            const resultsDiv = document.getElementById('results');
+
+            if (!query) {
+                showAlert('Please enter a course description or skills you want to learn.', 'warning');
+                return;
+            }
+
+            // Show loading state
+            btnText.textContent = 'Analyzing...';
+            spinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
+            showLoading();
+
+            try {
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ 'query': query })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Received data:', data);
+
+                displayResults(data, query);
+
+            } catch (error) {
+                console.error('Error fetching recommendations:', error);
+                showAlert(`Failed to get recommendations. Please try again. (${error.message})`, 'danger');
+            } finally {
+                // Reset button state
+                btnText.textContent = 'Find My Perfect Courses';
+                spinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Add ripple effect to button
+        document.querySelector('.search-btn').addEventListener('click', createRipple);
+
+        function showLoading() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="loading-container fade-in">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">
+                        <i class="bi bi-cpu me-2"></i>
+                        AI is analyzing millions of courses to find your perfect match...
+                    </p>
+                </div>
+            `;
+        }
+
+        function showAlert(message, type) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="alert custom-alert alert-${type} fade-in text-center" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        function displayResults(data, query) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!data || data.length === 0) {
+                showAlert(`No courses found for "${query}". Try different keywords like "programming", "design", or "business".`, 'info');
+                return;
+            }
+
+            let html = `
+                <div class="results-header fade-in">
+                    <h2 class="results-title">
+                        <i class="bi bi-stars me-3"></i>
+                        Perfect Matches for You
+                    </h2>
+                    <p class="results-subtitle">
+                        Found ${data.length} amazing courses matching "${query}"
+                    </p>
+                </div>
+                <div class="row g-4">
+            `;
+
+            data.forEach((course, index) => {
+                const title = course.title || 'Course Title Unavailable';
+                const skills = course.skills_covered || 'Skills not specified';
+                const description = getValidValue(course.description, 'Explore this comprehensive course designed to enhance your skills and knowledge.');
+                const duration = getValidValue(course.duration, 'Self-paced');
+                const level = course.level || 'All Levels';
+                const platform = course.platform || 'Online Platform';
+                const url = course.url || '#';
+
+                html += `
+                    <div class="col-lg-6 slide-up" style="animation-delay: ${index * 0.1}s">
+                        <div class="course-card">
+                            <div class="course-rank">${index + 1}</div>
+                            <div class="card-body">
+                                <h3 class="course-title">${title}</h3>
+                                <div class="skills-tag">
+                                    <i class="bi bi-tags-fill me-1"></i>
+                                    ${truncateText(skills, 80)}
+                                </div>
+                                <p class="course-description">
+                                    ${truncateText(description, 150)}
+                                </p>
+                                <div class="course-meta">
+                                    <div class="meta-item">
+                                        <i class="bi bi-clock"></i>
+                                        ${duration}
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-bar-chart"></i>
+                                        ${level}
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-laptop"></i>
+                                        ${platform}
+                                    </div>
+                                </div>
+                                ${url !== '#' ? `
+                                    <a href="${url}" target="_blank" class="view-course-btn">
+                                        <i class="bi bi-arrow-right-circle"></i>
+                                        View Course
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function getValidValue(value, defaultValue) {
+            if (!value || 
+                value === 'NaN' || 
+                value === 'nan' || 
+                value === 'null' || 
+                value === 'undefined' ||
+                value === 'Not available' ||
+                String(value).trim() === '') {
+                return defaultValue;
+            }
+            return String(value).trim();
+        }
+
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substr(0, maxLength).trim() + '...';
+        }
+
+        // Add smooth scrolling to results
+        function scrollToResults() {
+            document.getElementById('results').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Auto-scroll to results when they appear
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.target.id === 'results') {
+                    if (mutation.target.children.length > 0) {
+                        setTimeout(scrollToResults, 300);
+                    }
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('results'), {
+            childList: true,
+            subtree: true
+        });
+    </script>
 </body>
 </html>
