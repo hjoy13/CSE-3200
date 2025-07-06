@@ -72,7 +72,10 @@ document.getElementById('reco-form').addEventListener('submit', async function(e
                         <small class="text-muted">
                             <strong>Duration:</strong> ${duration} | 
                             <strong>Level:</strong> ${level} | 
-                            <strong>Platform:</strong> ${platform}
+                            <strong>Platform:</strong> ${platform} |
+                            <strong>Platform:</strong> ${rating} |
+                            <strong>Platform:</strong> ${students}
+
                         </small>
                     </p>
                     ${url !== '#' ? `<a href="${url}" target="_blank" class="btn btn-primary btn-sm">View Course</a>` : ''}

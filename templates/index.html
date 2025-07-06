@@ -566,8 +566,12 @@
                 const description = getValidValue(course.description, 'Explore this comprehensive course designed to enhance your skills and knowledge.');
                 const duration = getValidValue(course.duration, 'Self-paced');
                 const level = course.level || 'All Levels';
-                const platform = course.platform || 'Online Platform';
+                const platform = 'Coursera';
                 const url = course.url || '#';
+                const students = course.enrolled_students || 'Nan';
+                const rating = course.rating || 'Nan';
+                
+
 
                 html += `
                     <div class="col-lg-6 slide-up" style="animation-delay: ${index * 0.1}s">
@@ -590,6 +594,14 @@
                                     <div class="meta-item">
                                         <i class="bi bi-bar-chart"></i>
                                         ${level}
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-bar-chart"></i>
+                                        ${students}
+                                    </div>
+                                     <div class="meta-item">
+                                        <i class="bi bi-bar-chart"></i>
+                                        ${rating}
                                     </div>
                                     <div class="meta-item">
                                         <i class="bi bi-laptop"></i>

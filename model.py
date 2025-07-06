@@ -63,8 +63,10 @@ def get_recommendations(user_input, transformed_corpus):
         'description': 'No description available',
         'duration': 'Duration not available',
         'level': 'Level not specified',
-        'platform': 'Platform not specified',
-        'url': ''
+        'url': '',
+        'course_certificate_type': 'Not mentioned',
+        'enrolled_students': 'Not mentioned',
+        'rating': 'Not mentioned'
     })
     
     # Convert any remaining NaN to string
